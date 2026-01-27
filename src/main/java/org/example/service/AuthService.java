@@ -12,6 +12,7 @@ import org.example.mapper.UserMapper;
 import org.example.repository.PermissionRepository;
 import org.example.repository.UserPermissionRepository;
 import org.example.repository.UserRepository;
+import org.example.skills.AuthUtil;
 import org.example.skills.Jwt.JwtService;
 import org.example.skills.enums.ERole;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -75,10 +76,26 @@ public class AuthService {
     }
 
     public void register(RegisterRequest request){
-        User user = UserMapper.INSTANCE.fromRegisterDto(request);
-        user.setCompanyId(request.adminCompanyId());
-        user.setRole(ERole.USER);
-        user.setPasswordHash(passwordConfig.passwordEncoder().encode(request.password()));
+
+        // 🔐 Sisteme giriş yapan kullanıcıyı JWT'den al
+        Long adminUserId = AuthUtil.getUserId();
+
+        User adminUser = userRepository.findById(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Admin bulunamadı"));
+
+        // 🔴 YETKİ KONTROLÜ
+        if (adminUser.getRole() != ERole.ADMIN) {
+            throw new RuntimeException("Bu işlem için yetkiniz yok");
+        }
+
+        // ✅ Yeni kullanıcı oluştur
+        User user = new User();
+        user.setUsername(request.username());
+        user.setCompanyId(adminUser.getCompanyId());   // 🔥 Aynı firmaya ekler
+        user.setRole(ERole.USER);                       // 🔥 ZORUNLU
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+
         userRepository.save(user);
     }
+
 }
