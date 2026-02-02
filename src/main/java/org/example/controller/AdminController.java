@@ -17,7 +17,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@CrossOrigin
+@CrossOrigin(
+        origins = "*",
+        allowedHeaders = "*",
+        methods = {
+                RequestMethod.GET,
+                RequestMethod.POST,
+                RequestMethod.PUT,
+                RequestMethod.DELETE,
+                RequestMethod.OPTIONS
+        }
+)
 public class AdminController {
 
     private final AdminService adminService;
@@ -42,8 +52,6 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
-
-
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/profiles")
     public List<User> getAllProfiles(
@@ -53,6 +61,7 @@ public class AdminController {
                 .getAllProfiles(user.getCompanyId());
     }
 
+    // 🔥 SİLME / PASİF YAPMA
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/users/{id}")
     public void deactivate(
@@ -62,6 +71,3 @@ public class AdminController {
         adminService.deactivateUser(id, user.getId());
     }
 }
-
-
-
