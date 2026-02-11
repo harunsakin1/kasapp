@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -19,5 +21,12 @@ public class DashboardController {
     @GetMapping
     public DashboardResponse dashboard(@AuthenticationPrincipal CustomUserDetails user) {
         return service.getDashboard(user.getCompanyId());
+    }
+
+    @GetMapping("/chart")
+    public Map<String,Object> chart(
+            @AuthenticationPrincipal CustomUserDetails user){
+
+        return service.getChart(user.getCompanyId());
     }
 }
